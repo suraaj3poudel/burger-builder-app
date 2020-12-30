@@ -1,4 +1,1 @@
-# classy-messy
-Just figuring out how this works
-
-I am yet to make the changes. Just a sec
+A simple burger building web application.
