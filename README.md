@@ -1,1 +1,1 @@
-A simple burger building web application
+A simple burger building web application.
