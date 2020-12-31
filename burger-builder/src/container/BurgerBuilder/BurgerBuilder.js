@@ -86,6 +86,10 @@ purchaseCancelHandler=()=>{
     })
 }
 
+purchaseContinueHandler=()=>{
+    alert('You Continue!')
+}
+
  render(){
     let disabledInfo={
         ...this.state.ingredients
@@ -97,7 +101,7 @@ purchaseCancelHandler=()=>{
     return(
         <Auxillary>
             <Modal show={this.state.purchasing} modalClosed={this.purchaseCancelHandler}>
-                <OrderSummary ingredients={this.state.ingredients}/>
+                <OrderSummary totalPrice = {this.state.totalPrice.toFixed(2)} ingredients={this.state.ingredients} cancel={this.purchaseCancelHandler} order={this.purchaseContinueHandler}/>
             </Modal>
             <Burger ingredients={this.state.ingredients}/>
             <BuildControls 
