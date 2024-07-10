@@ -1,0 +1,629 @@
+openapi: 3.0.0
+info:
+  title: TicketSpec API
+  description: "This Api allows to retrieve the BARTS refund status information for the document number specified."
+  version: 1.0.0
+servers:
+  
+  - url: 'https://{restapi_id}.execute-api.{region}.amazonaws.com/{stage_name}'
+    description: "AWS API Gateway"
+    variables:
+      restapi_id:
+        default: ''
+        description: |
+          ```{restapi_id}``` is the API identifier
+      region:
+        description: |
+          ```{region}``` is the AWS Region
+        enum:
+          - us-east-1
+          - us-east-2
+        default: us-east-1
+      stage_name:
+        description: |
+          ```{stage_name}``` is the stage name of the API deployment.
+        default: ''
+  
+
+paths:
+  /checkHealth:
+    get:
+      x-amazon-apigateway-integration:  
+       type: aws_proxy  
+       uri:    
+        Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaFunctionArn}:live/invocations 
+       httpMethod: POST  
+       responses:  
+        4\d{2}:    
+          statusCode: "400"   
+        5\d{2}:    
+          statusCode: "500"    
+        2\d{2}:    
+          statusCode: "200" 
+       passthroughBehavior: when_no_match
+      summary: Performs a basic health check
+      description: Performs a basic health check to verify API is up and running.
+      operationId: checkHealth
+      tags:
+        - HealthStatus
+
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+                
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+                
+        '504':
+          description: Gateway Timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /retrieveCouponStatus:
+    post:
+      x-amazon-apigateway-integration:  
+       type: aws_proxy  
+       uri:    
+        Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaFunctionArn}:live/invocations 
+       httpMethod: POST  
+       responses:  
+        4\d{2}:    
+          statusCode: "400"   
+        5\d{2}:    
+          statusCode: "500"    
+        2\d{2}:    
+          statusCode: "200" 
+       passthroughBehavior: when_no_match
+      security:
+        - api-gateway-authorizer: []
+      tags:
+      - RetrieveCouponStatus
+      summary: To retrieve the BARTS refund status information from Backend DB2 Database for the specified document number
+      description: |
+           To retrieve the BARTS refund status information from Backend DB2 Database for the specified document number. 
+      operationId: RetrieveCouponStatus
+      parameters:
+        - $ref: '#/components/parameters/transactionId'
+        - $ref: '#/components/parameters/channelId'
+        - $ref: '#/components/parameters/appId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetrieveCouponStatusRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetrieveCouponStatusResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '502':
+          description: Bad Gateway
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '503':
+          description: Service Unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+        '504':
+          description: Gateway Timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        
+components:
+  parameters:
+    appId: 
+      name: appId
+      in: header
+      description: Each client should have a unique identifier. This is defined by Worldspan.
+      required: false
+      schema: 
+        type: string
+      example: 12133
+    transactionId:
+      name: transactionId
+      in: header
+      description: The unique transaction id for this session. This must be created and provided by the client and is used in instrumentation logging and reporting.
+      required: true
+      schema: 
+        type: string 
+      example: abg0jf54lskf5
+    channelId:
+      name: channelId
+      in: header
+      description: The name of the channel from which the request is originating, e.g. kiosk, delta.com, etc.
+      schema: 
+        type: string 
+      example: delta.com,kiosk
+  schemas:
+
+    DBConnectionInfo:
+      type: object
+      properties:
+        bedsDBDnsNameId:
+          type: string
+          description: An id to match the client with a particular dns for      BEDS
+          pattern: '^([A-Za-z0-9]*|\s*)$'
+        testBedsDBId:
+          type: string
+          description: A predefined BookingEDS (BEDS) database instance id
+          pattern: '^([A-Za-z0-9]*|\s*)$'
+        testFpesDBId:
+          type: string
+          description: A predefined FPES database instance id
+          pattern: '^([A-Za-z0-9]*|\s*)$'
+    DebugInfo:
+      type: object
+      properties:
+        additionalInfo:
+          type: string
+          description: any information that would be helpful in understanding the
+            response e.g. the specific step name in a series of steps
+        configurationSettings:
+          type: string
+          description: Configuration Settings
+        dataSourceName:
+          type: string
+          description: Name of the Data Source
+        dataSourceRequest:
+          type: string
+          description: Actual data sent to Data Source
+        dataSourceResponse:
+          type: string
+          description: Actual data received from Data Source
+        requestInfo:
+          $ref: '#/components/schemas/RequestInfoType'
+        timers:
+          type: string
+          description: Execution times at various design layers
+        transportInfo:
+          type: string
+          description: e.g.Transport Wsine
+
+    HostContextParams:
+      type: object
+      properties:
+        airline:
+          type: string
+          description: Airline Code
+          pattern: '^([A-Z]*|\s*)$'
+          example: "DL"
+        city:
+          type: string
+          description: Specifies the City Code that is to be used; this has implications
+            as to which commands can be executed on specific records.
+          pattern: '^(?:\s*|[A-Z]{3})?$'  
+          example: "ATL"
+        dutyCode:
+          type: string
+          pattern: '^([A-Z]*|\s*)$'
+          example: "PD"
+        logonId:
+          type: string
+          description: "If the session is to be created using an individual's logon,\
+            \ this specifies the LogonId to be utilized for this session. This can\
+            \ have various implications including what commands can be executed, etc."
+          pattern: '^(?:\s*|[A-Za-z0-9]+)$'
+          example: ""
+        password:
+          type: string
+          description: Password for the LogonId provided (if any)
+          pattern: '^([A-Za-z0-9]*|\s*)$'
+          example: "123456MK"
+        poolType:
+          type: string
+          description: "Indicates PoolName or a client's logged-in wsine for which\
+            \ session is being  requested. If a client's logged-in wsine is being\
+            \ used, info in the format,  ;wsine=xxxxxx  should be passed in for all\
+            \ operations that create or destroy a session. If a client's logged-in\
+            \ wsine is being used AND this wsine needs to be logged off during destroy,\
+            \ info in the format,  ;wsine=xxxxxx;logoff=Y/N  should be passed in for\
+            \ all operations that create or destroy a session. xxxxx is the wsine\
+            \ and logoff=Y would imply that  during destroy the client's wsine will\
+            \ be logged off."
+          pattern: '^(?:[A-Za-z0-9=,/]*|\s*)$'
+          example: "SINGLE/NETWORK/APP"
+        resetPassword:
+          type: string
+          description: "ResetPassword is required if the password is to be changed\
+            \ with this request. If this is present, password for the LogonId should\
+            \ be changed to the password requested. Don't ask why it is even here!"
+          pattern: '^([A-Za-z0-9]*|\s*)$'
+          example: ""
+        timeoutInactivity:
+          type: string
+          description: Specify the timeout in seconds for the requested session if
+            the session is inactive for the duration specified. This should be based
+            on the type of transaction the session is about to handle. Inactivity
+            timeout should be less than the TimeoutSession. This should be an int
+            with a range from 0000 - 9998.
+          pattern: '^(?!9999)(?:[0-9]\d{3}|[ ]*|\s*)$'
+          example: "1800"
+        timeoutSession:
+          type: string
+          description: Specify the timeout in seconds for the requested session. This
+            should be based on the type of transaction the session is about to handle.
+            The session will be terminated when this is reached even if there is activity
+            against the session. This should be an int with a range from 0000 - 9999.
+          pattern: '^(?:[0-9]\d{3}|[ ]*|\s*)$'
+          example: "3240"
+    MoreInfo:
+      type: object
+      properties:
+        code:
+          type: string
+        field:
+          type: string
+        message:
+          type: string
+    RefundStatusInformationType:
+      type: object
+      properties:
+        activityDate:
+          type: string
+          example: "03/24/2017"
+        checkIssueDate:
+          type: string
+          example: ""
+        checkNumber:
+          type: string
+          example: ""
+        creditCardNumber:
+          type: string
+          example: "3003"
+        creditCardType:
+          type: string
+          example: "AX"
+        currencyCode:
+          type: string
+          example: "USD"
+        documentNumber:
+          type: string
+          example: "0062361724251"
+        refundAmount:
+          type: string
+          example: "1293.96"
+        refundStatus:
+          type: string
+          example: "D"
+        responseCode:
+          type: string
+          example: "D"
+    RequestInfo:
+      type: object
+      properties:
+        appChannelName:
+          type: string
+          description: "The name of the channel from which the request is originating,\
+            \ e.g. kiosk, delta.com, etc."
+          pattern: '^([A-Za-z.]*|\s*)$'
+          example: "delta.com"
+          
+        applicationId:
+          type: string
+          description: Each client should have a unique identifier. This is defined
+            by Worldspan.
+          pattern: '^([A-Z]*|\s*)$'
+          example: "AX"
+        applicationVersion:
+          type: string
+          description: Logged for debugging and possibly used for routing.
+          pattern: '^(?:[A-Za-z0-9-.,:]*|\s*)$'
+          example: ""
+        company:
+          type: string
+          description: "Logged for debugging and possibly used for routing. For DT,\
+            \ it would all be Delta."
+          pattern: '^([A-Za-z]*|\s*)$'
+          example: "delta"
+        dbConnectionInfo:
+          $ref: '#/components/schemas/DBConnectionInfo'
+        debugOptions:
+          type: string
+          description: "If not empty, debug information will be included in the response.\
+            \ The debug information will include, among other things, the actual request/response\
+            \ sent/received from the data sources used in the service and the current\
+            \ configuration settings."
+          pattern: '^([YyNn]*|\s*)$'
+          example: "Y"
+        description:
+          type: string
+          description: The description of the transaction or session. This is also
+            provided by the client and is used in instrumentation logging and reporting.
+          pattern: '^(?:[A-Za-z0-9-.,()]*|\s*)$'
+          example: ""
+        externalVendorFlag:
+          type: string
+          description: Default is N. This flag needs to be set to 'Y' if the request
+            is for external Vendor.
+          pattern: '^([YyNn]*|\s*)$'
+          example: "N"
+        hostContextParams:
+          $ref: '#/components/schemas/HostContextParams'
+        location:
+          type: string
+          description: Logged for debugging and possibly used for routing.
+          pattern: '^(?:\s*|[A-Z]{3})?$'
+          example: "ATL"
+        sessionId:
+          type: string
+          description: The session cookie that was provided by the Session.Create
+            service.
+          pattern: '^(?:[A-Za-z0-9=,]*|\s*)$'
+          example: ""
+        testLab:
+          type: string
+          description: Use this parameter if the request need to be routed to a particular
+            test lab (TSAJ..TSAT..ETC). This should be used only for debugging puposes
+            while the default lab is not available. This parameter should never be
+            used in Production Environment.
+          pattern: '^([A-Z]*|\s*)$'
+          example: "TSBB"
+        transactionId:
+          type: string
+          description: The unique transaction id for this session. This must be created
+            and provided by the client and is used in instrumentation logging and
+            reporting.
+          pattern: '^(?:[A-Za-z0-9./-]*|\s*)$'
+          example: "QECOE/QATLW7SNPL06/"
+        turnOffResponseInfo:
+          type: string
+          description: "By default, all operation responses may return ResponseInfo\
+            \ elements. Set this to \"Y\" to not get back any ResponseInfo elements\
+            \ in the response."
+          pattern: '^([A-Z]*|\s*)$'
+          example: ""
+    RequestInfoType:
+      type: object
+      properties:
+        appChannelName:
+          type: string
+          description: "The name of the channel from which the request is originating,\
+            \ e.g. kiosk, delta.com, etc."
+          example: "delta.com"
+        applicationId:
+          type: string
+          description: Each client should have a unique identifier. This is defined
+            by Worldspan.
+        applicationVersion:
+          type: string
+          description: Logged for debugging and possibly used for routing.
+        company:
+          type: string
+          description: "Logged for debugging and possibly used for routing. For DT,\
+            \ it would all be Delta."
+        dbConnectionInfo:
+          $ref: '#/components/schemas/DBConnectionInfo'
+        debugOptions:
+          type: string
+          description: "If not empty, debug information will be included in the response.\
+            \ The debug information will include, among other things, the actual request/response\
+            \ sent/received from the data sources used in the service and the current\
+            \ configuration settings."
+        description:
+          type: string
+          description: The description of the transaction or session. This is also
+            provided by the client and is used in instrumentation logging and reporting.
+        externalVendorFlag:
+          type: string
+          description: Default is N. This flag needs to be set to 'Y' if the request
+            is for external Vendor.
+        hostContextParams:
+          $ref: '#/components/schemas/HostContextParams'
+        location:
+          type: string
+          description: Logged for debugging and possibly used for routing.
+        sessionId:
+          type: string
+          description: The session cookie that was provided by the Session.Create
+            service.
+        testLab:
+          type: string
+          description: Use this parameter if the request need to be routed to a particular
+            test lab (TSAJ..TSAT..ETC). This should be used only for debugging puposes
+            while the default lab is not available. This parameter should never be
+            used in Production Environment.
+        transactionId:
+          type: string
+          description: The unique transaction id for this session. This must be created
+            and provided by the client and is used in instrumentation logging and
+            reporting.
+        turnOffResponseInfo:
+          type: string
+          description: "By default, all operation responses may return ResponseInfo\
+            \ elements. Set this to \"Y\" to not get back any ResponseInfo elements\
+            \ in the response."
+    ResponseInfo:
+      type: object
+      properties:
+        additionalInfo:
+          type: string
+          description: May contain semi-colon delimited strings
+          example: "TicketSpec - RefundCouponStatus"
+        serviceTrackingId:
+          type: string
+          description: "May be provided by service...The concatenated node name, service\
+            \ name, operation name, and a unique randomly generated number.  If client\
+            \ logs this, then we can tie the service log entries to the client log\
+            \ entries (especially if client did not send a TransactionId)"
+          example: "TicketSpec Service.1490423808024"
+        transactionId:
+          type: string
+          description: May be provided by client...should be same for each "transaction"
+            on client side
+          example: "abg0jf54lskf5"
+  
+    RetrieveCouponStatusRequest:
+      required:
+      - documentNumber
+      type: object
+      properties:
+        documentNumber:
+          type: string
+          description: "#[13..14]"
+          pattern: '^\d{13}$'
+          example: "0062361724251"
+        requestInfo:
+          $ref: '#/components/schemas/RequestInfo'
+    RetrieveCouponStatusResponse:
+      type: object
+      properties:
+        debugInfo:
+          $ref: '#/components/schemas/DebugInfo'
+        refundStatusInformation:
+          type: array
+          items:
+            $ref: '#/components/schemas/RefundStatusInformationType'
+        responseInfo:
+          $ref: '#/components/schemas/ResponseInfo'
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        developerMessage:
+          type: string
+        message:
+          type: string
+        moreInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/MoreInfo'
+    
+    HealthStatus:
+      type: object
+      description: >-
+        Indicates whether the service status is acceptable or not. API publishers should use following values for the field –
+          * **"Pass"** : Healthy
+          * **"Fail"** : Unhealthy
+          * **"Warn"** : Healthy with some concerns
+      properties:
+        status:
+          description: The HealthStatus provides the well-being status of the API.
+          type: string
+          enum: 
+            - PASS
+            - FAIL
+            - WARN
+
+  securitySchemes:
+    api-gateway-authorizer:
+      type: "apiKey"   
+      name: "Authorization"   
+      in: "header"   
+      x-amazon-apigateway-authtype: "custom"   
+      x-amazon-apigateway-authorizer:
+       authorizerUri:         
+           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${authorizerLambdaFunctionArn}/invocations
+       authorizerResultTtlInSeconds: 0      
+       type: "token"
